@@ -5,12 +5,12 @@
   - [x] Initialize solution structure
   - [x] Setup `appsettings.json`, `appsettings.Development.json`, and `appsettings.Staging.json`
   - [x] Initialize `secrets.json` for development (specifically for LLM Gateway secrets)
-- [~] Task: Integrate OpenTelemetry
-  - [ ] Write Tests (OTEL configuration validation)
-  - [ ] Implementation (Configure OTEL for logs and metrics pointing to `observe.fmg.local`)
-- [ ] Task: Setup Open Knowledge Format (OKF) & Mock Infrastructure
-  - [ ] Create basic YAML infrastructure definition for deployment
-  - [ ] Define memory interfaces (e.g., `IMemoryStore`) and implement an in-memory Mock version for dev to bypass SQL Server requirements
+- [x] Task: Integrate OpenTelemetry 5b43565
+  - [x] Write Tests (OTEL configuration validation)
+  - [x] Implementation (Configure OTEL for logs and metrics pointing to `observe.fmg.local`)
+- [~] Task: Setup Open Knowledge Format (OKF) & Mock Infrastructure
+  - [ ] Write Tests (OKF parser validation, mock database injection)
+  - [ ] Implementation (Create OKF models, parser service, Mock database context)
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Authentication (BFF & Entra ID)
