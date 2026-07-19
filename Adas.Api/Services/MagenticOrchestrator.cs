@@ -1,4 +1,6 @@
 using System.Threading.Tasks;
+using System.Linq;
+using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.AI;
 using Microsoft.Agents.AI;
@@ -34,15 +36,19 @@ public class MagenticOrchestrator : IOrchestrator
             .WithMaxResets(2)
             .Build();
             
-        var response = await chatClient.GetResponseAsync(inputPrompt); 
-        return response?.ToString() ?? "";
+        // Execute the workflow via MAF
+        Run run = await InProcessExecution.RunAsync(workflow, inputPrompt);
+        
+        // Find the final output event
+        var outputEvent = run.OutgoingEvents.OfType<WorkflowOutputEvent>().LastOrDefault();
+        
+        return outputEvent?.Data?.ToString() ?? "";
     }
 
     public async IAsyncEnumerable<string> StreamWorkflowAsync(string inputPrompt, string modelId, string agentId)
     {
         var chatClient = _clientFactory.CreateClient(modelId);
         
-        // Setup agent system prompt based on agentId
         var systemPrompt = agentId switch
         {
             "DbaAgent" => "You are a DBA expert.",
@@ -53,13 +59,24 @@ public class MagenticOrchestrator : IOrchestrator
 
         var agent = new ChatClientAgent(chatClient, systemPrompt);
         
-        // For actual streaming, we stream directly from the chat client for now.
-        // Once MagenticWorkflow supports streaming its intermediate steps, we can hook it up.
-        await foreach (var chunk in chatClient.GetStreamingResponseAsync(inputPrompt))
+        // Build the workflow. In a real system, we'd use the selected agent as a participant or manager.
+        Workflow workflow = new MagenticWorkflowBuilder(agent)
+            .WithName($"Magentic Workflow - {agentId}")
+            .RequirePlanSignoff(false)
+            .WithMaxRounds(10)
+            .Build();
+            
+        // Execute streaming workflow
+        await using StreamingRun run = await InProcessExecution.Lockstep.RunStreamingAsync(workflow, inputPrompt);
+
+        await foreach (var evt in run.WatchStreamAsync())
         {
-            if (chunk.Text != null)
+            if (evt is AgentResponseUpdateEvent updateEvent && updateEvent.Data is ChatResponseUpdate update)
             {
-                yield return chunk.Text;
+                if (update.Text != null)
+                {
+                    yield return update.Text;
+                }
             }
         }
     }
