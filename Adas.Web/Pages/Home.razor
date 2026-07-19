@@ -10,7 +10,8 @@
 
 <style>
     .glass-panel {
-        background: rgba(18, 18, 18, 0.65);
+        background: var(--mud-palette-surface);
+        opacity: 0.95;
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
         border: 1px solid rgba(0, 205, 225, 0.3); /* Cyan accent border */
@@ -18,17 +19,17 @@
         border-radius: 12px;
     }
     .glass-input {
-        background: rgba(18, 18, 18, 0.8);
+        background: var(--mud-palette-surface);
         border: 1px solid rgba(15, 90, 211, 0.5); /* MidBlue accent border */
         border-radius: 8px;
     }
     .user-msg {
-        background: rgba(15, 90, 211, 0.2); /* MidBlue tint */
-        border: 1px solid rgba(15, 90, 211, 0.4);
+        background: rgba(15, 90, 211, 0.15); /* MidBlue tint */
+        border: 1px solid rgba(15, 90, 211, 0.3);
     }
     .agent-msg {
         background: rgba(0, 205, 225, 0.1); /* Cyan tint */
-        border: 1px solid rgba(0, 205, 225, 0.3);
+        border: 1px solid rgba(0, 205, 225, 0.2);
     }
 </style>
 
@@ -85,6 +86,7 @@
     private HubConnection? _hubConnection;
     private List<ChatMessage> _messages = new();
     private string _userInput = "";
+    private ChatMessage? _currentStreamingMessage;
 
     protected override async Task OnInitializedAsync()
     {
@@ -98,6 +100,22 @@
         {
             _messages.Add(new ChatMessage { User = user, Text = message });
             InvokeAsync(StateHasChanged);
+        });
+
+        _hubConnection.On<string>("ReceiveToken", (token) =>
+        {
+            if (_currentStreamingMessage == null)
+            {
+                _currentStreamingMessage = new ChatMessage { User = "Agent", Text = "" };
+                _messages.Add(_currentStreamingMessage);
+            }
+            _currentStreamingMessage.Text += token;
+            InvokeAsync(StateHasChanged);
+        });
+
+        _hubConnection.On("StreamComplete", () => 
+        {
+            _currentStreamingMessage = null;
         });
 
         await _hubConnection.StartAsync();
@@ -127,7 +145,10 @@
             var msg = _userInput;
             _userInput = "";
             _messages.Add(new ChatMessage { User = "You", Text = msg });
-            await _hubConnection.SendAsync("SendMessage", msg);
+            _currentStreamingMessage = null; // Reset before streaming new message
+            
+            // Use StreamMessage which streams tokens
+            await _hubConnection.SendAsync("StreamMessage", msg, ChatState.SelectedModel, ChatState.SelectedAgent);
         }
     }
 

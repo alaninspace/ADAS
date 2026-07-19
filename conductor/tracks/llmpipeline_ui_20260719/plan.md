@@ -16,9 +16,9 @@
 - [x] Task: Implement the terminal-inspired dark mode theme using CSS/Blazor.
 - [x] Task: Implement the Copilot/Codex-inspired chat interface layout.
 - [x] Task: Add glassmorphism effects and micro-animations to components.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: Integration
-- [ ] Task: Write integration tests for the full pipeline (Frontend UI -> SignalR -> Backend -> Foundry API Gateway).
-- [ ] Task: Connect the new Chat UI components to the SignalR backend streaming service.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Write integration tests for the full pipeline (Frontend UI -> SignalR -> Backend -> Foundry API Gateway).
+- [x] Task: Connect the new Chat UI components to the SignalR backend streaming service.
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
