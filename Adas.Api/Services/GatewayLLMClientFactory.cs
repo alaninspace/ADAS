@@ -18,7 +18,7 @@ public class GatewayLLMClientFactory : ILLMClientFactory
     public IChatClient CreateClient(string modelId)
     {
         var endpoint = _configuration["Gateway:Endpoint"];
-        var secret = _configuration["Gateway:Secret"] ?? "";
+        var secret = _configuration["Gateway:ApiKey"] ?? _configuration["Gateway:Secret"] ?? "";
         
         var options = new OpenAIClientOptions();
         

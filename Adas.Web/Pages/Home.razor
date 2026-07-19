@@ -1,7 +1,101 @@
-﻿@page "/"
+@page "/"
+@using Microsoft.AspNetCore.SignalR.Client
+@inject NavigationManager Navigation
+@implements IAsyncDisposable
 
-<PageTitle>Home</PageTitle>
+<PageTitle>ADAS Operator Chat</PageTitle>
 
-<h1>Hello, world!</h1>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="d-flex flex-column" Style="height: 85vh;">
+    <MudPaper Class="flex-grow-1 overflow-y-auto pa-4" Elevation="3" Style="background-color: var(--mud-palette-background-grey);">
+        <MudStack Spacing="3">
+            @foreach (var msg in _messages)
+            {
+                <MudPaper Class="@(msg.User == "You" ? "pa-3 align-self-end mud-theme-primary" : "pa-3 align-self-start mud-theme-dark")" Elevation="2" Style="max-width: 75%; border-radius: 12px;">
+                    <MudText Typo="Typo.caption" Class="mb-1" Style="opacity: 0.8;">@msg.User</MudText>
+                    <MudText Typo="Typo.body1">@msg.Text</MudText>
+                    @if (msg.User == "Manager" && msg.Text.Contains("approve", StringComparison.OrdinalIgnoreCase))
+                    {
+                        <div class="d-flex mt-2 gap-2">
+                            <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="@(() => SendAction("Approve"))">Approve</MudButton>
+                            <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="@(() => SendAction("Reject"))">Reject</MudButton>
+                        </div>
+                    }
+                </MudPaper>
+            }
+        </MudStack>
+    </MudPaper>
 
-Welcome to your new app.
+    <MudPaper Class="pa-2 mt-4" Elevation="3">
+        <div class="d-flex align-center">
+            <MudTextField @bind-Value="_userInput" Placeholder="Type your message..." Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1 mr-2" OnKeyDown="HandleKeyDown" />
+            <MudIconButton Icon="@Icons.Material.Filled.Send" Color="Color.Primary" OnClick="SendMessage" Disabled="@(!IsConnected || string.IsNullOrWhiteSpace(_userInput))" />
+        </div>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private HubConnection? _hubConnection;
+    private List<ChatMessage> _messages = new();
+    private string _userInput = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl(Navigation.ToAbsoluteUri("/chathub"))
+            .Build();
+
+        _hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
+        {
+            _messages.Add(new ChatMessage { User = user, Text = message });
+            InvokeAsync(StateHasChanged);
+        });
+
+        await _hubConnection.StartAsync();
+        
+        _messages.Add(new ChatMessage { User = "System", Text = "Connected to ADAS Orchestrator." });
+    }
+
+    private async Task SendMessage()
+    {
+        if (_hubConnection is not null && !string.IsNullOrWhiteSpace(_userInput))
+        {
+            var msg = _userInput;
+            _userInput = "";
+            _messages.Add(new ChatMessage { User = "You", Text = msg });
+            await _hubConnection.SendAsync("SendMessage", msg);
+        }
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SendMessage();
+        }
+    }
+
+    private async Task SendAction(string action)
+    {
+        if (_hubConnection is not null)
+        {
+            _messages.Add(new ChatMessage { User = "You", Text = $"Action: {action}" });
+            await _hubConnection.SendAsync("SendMessage", $"[ACTION:{action}]");
+        }
+    }
+
+    public bool IsConnected => _hubConnection?.State == HubConnectionState.Connected;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_hubConnection is not null)
+        {
+            await _hubConnection.DisposeAsync();
+        }
+    }
+
+    private class ChatMessage
+    {
+        public string User { get; set; } = "";
+        public string Text { get; set; } = "";
+    }
+}

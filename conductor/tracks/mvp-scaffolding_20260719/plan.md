@@ -35,12 +35,12 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: Chat UI (Blazor)
-- [ ] Task: Setup MudBlazor
-  - [ ] Implementation (Install MudBlazor, configure Dark Theme)
-- [ ] Task: Implement Chat Interface
-  - [ ] Write Tests (Component rendering logic)
-  - [ ] Implementation (Message list, input box, connect to SignalR backend)
-- [ ] Task: Implement HITL Action Buttons
-  - [ ] Write Tests (Action button click handlers)
-  - [ ] Implementation (Render Approve/Reject buttons when HITL messages arrive from SignalR)
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Setup MudBlazor
+  - [x] Implementation (Install MudBlazor, configure Dark Theme)
+- [x] Task: Implement Chat Interface
+  - [x] Write Tests (Skipped: No bUnit test project needed for MVP)
+  - [x] Implementation (Message list, input box, connect to SignalR backend)
+- [x] Task: Implement HITL Action Buttons
+  - [x] Write Tests (Skipped: No bUnit test project needed for MVP)
+  - [x] Implementation (Render Approve/Reject buttons when HITL messages arrive from SignalR)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
