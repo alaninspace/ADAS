@@ -5,6 +5,9 @@ using OpenTelemetry.Resources;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddSingleton<Adas.Api.Services.IMemoryStore, Adas.Api.Services.MockMemoryStore>();
+builder.Services.AddSingleton<Adas.Api.Services.IOkfParser, Adas.Api.Services.OkfParser>();
+
 var otel = builder.Services.AddOpenTelemetry();
 otel.ConfigureResource(resource => resource.AddService("Adas.Api"));
 

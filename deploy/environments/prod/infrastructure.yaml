@@ -1,0 +1,10 @@
+resources:
+  - name: adas-db
+    type: sql-server
+    version: "2025"
+    features:
+      - vector-support
+  - name: adas-gateway
+    type: llm-gateway
+  - name: observe
+    type: opentelemetry-collector
