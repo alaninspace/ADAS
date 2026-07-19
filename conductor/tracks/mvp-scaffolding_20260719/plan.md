@@ -1,7 +1,7 @@
 # Implementation Plan
 
 ## Phase 1: Project Initialization & Configuration
-- [ ] Task: Scaffold ASP.NET Core Web API project (Adas.Api) and Blazor WebAssembly project (Adas.Web)
+- [~] Task: Scaffold ASP.NET Core Web API project (Adas.Api) and Blazor WebAssembly project (Adas.Web)
   - [ ] Initialize solution structure
   - [ ] Setup `appsettings.json`, `appsettings.Development.json`, and `appsettings.Staging.json`
   - [ ] Initialize `secrets.json` for development (specifically for LLM Gateway secrets)

@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Adas.Api/Adas.Api.csproj" />
+  <Project Path="Adas.Web/Adas.Web.csproj" />
+</Solution>
