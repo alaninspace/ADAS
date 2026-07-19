@@ -14,12 +14,12 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Authentication (BFF & Entra ID)
-- [~] Task: Implement BFF OIDC Challenge
-  - [ ] Write Tests (Auth endpoints return 401/redirects properly, and allow bypass in Dev)
-  - [ ] Implementation (Wire in `AdasAuthorization` constants, Entra ID OpenIdConnect setup, with a dev-environment bypass flag)
-- [ ] Task: Secure API Endpoints
-  - [ ] Write Tests (Ensure API rejects unauthenticated requests unless auth is bypassed in Dev)
-  - [ ] Implementation (Apply `OperatorPolicy` to all API endpoints, allowing mock identities/anonymous access in Dev mode if configured)
+- [x] Task: Implement BFF OIDC Challenge
+  - [x] Write Tests (Auth endpoints return 401/redirects properly, and allow bypass in Dev)
+  - [x] Implementation (Wire in `AdasAuthorization` constants, Entra ID OpenIdConnect setup, with a dev-environment bypass flag)
+- [x] Task: Secure API Endpoints
+  - [x] Write Tests (Ensure API rejects unauthenticated requests unless auth is bypassed in Dev)
+  - [x] Implementation (Apply `OperatorPolicy` to all API endpoints, allowing mock identities/anonymous access in Dev mode if configured)
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: Magentic Orchestrator Backend

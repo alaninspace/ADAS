@@ -2,6 +2,10 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Resources;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using System.Security.Claims;
+using Adas.Api.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,13 +46,51 @@ if (otelEnabled && !string.IsNullOrEmpty(otlpEndpoint))
     });
 }
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+var authBypass = builder.Configuration.GetValue<bool>("Authentication:BypassInDev");
+
+var authBuilder = builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = authBypass ? CookieAuthenticationDefaults.AuthenticationScheme : OpenIdConnectDefaults.AuthenticationScheme;
+})
+.AddCookie(options => 
+{
+    options.Cookie.Name = "Adas.Auth";
+    options.Cookie.SameSite = SameSiteMode.Strict;
+});
+
+if (!authBypass)
+{
+    authBuilder.AddOpenIdConnect(options =>
+    {
+        var authConfig = builder.Configuration.GetSection("Authentication:Schemes:MicrosoftOidc");
+        options.Authority = authConfig["Authority"];
+        options.ClientId = authConfig["ClientId"];
+        options.ResponseType = "code";
+        options.SaveTokens = true;
+        options.TokenValidationParameters.RoleClaimType = AdasAuthorization.RoleClaimType;
+    });
+}
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(AdasAuthorization.OperatorPolicy, policy => 
+    {
+        if (authBypass)
+        {
+            policy.RequireAssertion(context => true);
+        }
+        else 
+        {
+            policy.RequireAuthenticatedUser();
+        }
+    });
+});
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -56,30 +98,31 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+app.UseBlazorFrameworkFiles();
+app.UseStaticFiles();
 
-app.MapGet("/weatherforecast", () =>
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapGet("/api/user/info", (ClaimsPrincipal user) => 
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+    return new { user.Identity?.Name, IsAuthenticated = user.Identity?.IsAuthenticated ?? true };
+}).RequireAuthorization(AdasAuthorization.OperatorPolicy);
+
+app.MapGet("/login", (string? returnUrl, HttpContext context) =>
+{
+    return Results.Challenge(new Microsoft.AspNetCore.Authentication.AuthenticationProperties { RedirectUri = returnUrl ?? "/" }, 
+        new[] { OpenIdConnectDefaults.AuthenticationScheme });
+});
+
+app.MapGet("/logout", (HttpContext context) =>
+{
+    return Results.SignOut(new Microsoft.AspNetCore.Authentication.AuthenticationProperties { RedirectUri = "/" }, 
+        new[] { CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme });
+});
+
+app.MapFallbackToFile("index.html");
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
 
 public partial class Program { }
