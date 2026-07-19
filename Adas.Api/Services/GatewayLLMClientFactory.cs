@@ -29,6 +29,7 @@ public class GatewayLLMClientFactory : ILLMClientFactory
 
         // Use standard OpenAI Client pointing to the Gateway
         var openAiClient = new OpenAIClient(new ApiKeyCredential(secret), options);
+        Console.WriteLine($"[GatewayLLMClientFactory] CreateClient called with modelId: '{modelId}'");
         
         return openAiClient.GetChatClient(modelId).AsIChatClient();
     }

@@ -31,62 +31,122 @@
         background: rgba(0, 205, 225, 0.1); /* Cyan tint */
         border: 1px solid rgba(0, 205, 225, 0.2);
     }
+    .error-msg {
+        background: rgba(220, 53, 69, 0.1); /* Red tint */
+        border: 1px solid rgba(220, 53, 69, 0.3);
+        color: var(--mud-palette-error);
+    }
+    
+    /* 8-dot pulsing loader (4x2 grid) */
+    .dot-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+        width: 32px;
+        margin: 8px 0;
+    }
+    .dot-grid .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: var(--mud-palette-primary);
+        animation: pulse 1.5s infinite ease-in-out;
+    }
+    .dot-grid .dot:nth-child(1) { animation-delay: 0.1s; background-color: #00CDE1; } /* Cyan */
+    .dot-grid .dot:nth-child(2) { animation-delay: 0.2s; background-color: #00FF00; } /* Green */
+    .dot-grid .dot:nth-child(3) { animation-delay: 0.3s; background-color: #0F5AD3; } /* MidBlue */
+    .dot-grid .dot:nth-child(4) { animation-delay: 0.4s; background-color: #00CDE1; }
+    .dot-grid .dot:nth-child(5) { animation-delay: 0.5s; background-color: #00FF00; }
+    .dot-grid .dot:nth-child(6) { animation-delay: 0.6s; background-color: #0F5AD3; }
+    .dot-grid .dot:nth-child(7) { animation-delay: 0.7s; background-color: #00CDE1; }
+    .dot-grid .dot:nth-child(8) { animation-delay: 0.8s; background-color: #00FF00; }
+    
+    @@keyframes pulse {
+        0%, 100% { opacity: 0.2; transform: scale(0.8); }
+        50% { opacity: 1; transform: scale(1.2); }
+    }
 </style>
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="d-flex flex-column pa-4" Style="height: 85vh; background-color: var(--mud-palette-background);">
-    
-    <!-- Header with Selectors -->
-    <MudPaper Class="glass-panel pa-3 mb-4 d-flex align-center" Elevation="0">
-        <MudText Typo="Typo.subtitle1" Class="mr-4">Model Picker</MudText>
+<div class="d-flex flex-column" style="height: calc(100vh - 150px);">
+    <div class="d-flex justify-end align-center mb-4">
         <MudSelect T="string" Value="@ChatState.SelectedModel" ValueChanged="OnModelChanged" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mr-6" Style="max-width: 200px;">
-            <MudSelectItem Value="@("gpt-5.6-terra")">gpt-5.6-terra</MudSelectItem>
-            <MudSelectItem Value="@("gpt-4o")">gpt-4o</MudSelectItem>
-            <MudSelectItem Value="@("gpt-3.5")">gpt-3.5</MudSelectItem>
+            <MudSelectItem Value="@("openai/gpt-5.6-terra")">GPT-5.6 Terra</MudSelectItem>
+            <MudSelectItem Value="@("openai/gpt-5.6-sol")">GPT-5.6 Sol</MudSelectItem>
+            <MudSelectItem Value="@("openai/gpt-5.6-luna")">GPT-5.6 Luna</MudSelectItem>
+            <MudSelectItem Value="@("openai/gpt-5.4-nano")">GPT-5.4 nano</MudSelectItem>
+            <MudSelectItem Value="@("google-vertex/anthropic-claude-opus-4-8")">Claude Opus 4.8</MudSelectItem>
+            <MudSelectItem Value="@("google-vertex/anthropic-claude-sonnet-5")">Claude Sonnet 5</MudSelectItem>
+            <MudSelectItem Value="@("aws-claude-platform/claude-sonnet-4-6")">Claude Sonnet 4.6</MudSelectItem>
+            <MudSelectItem Value="@("aws-claude-platform/claude-haiku-4-5")">Claude Haiku 4.5</MudSelectItem>
         </MudSelect>
-
-        <MudText Typo="Typo.subtitle1" Class="mr-4">Agent Selector</MudText>
         <MudSelect T="string" Value="@ChatState.SelectedAgent" ValueChanged="OnAgentChanged" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 200px;">
-            <MudSelectItem Value="@("GeneralAgent")">GeneralAgent</MudSelectItem>
-            <MudSelectItem Value="@("DbaAgent")">DbaAgent</MudSelectItem>
-            <MudSelectItem Value="@("WindowsAdminAgent")">WindowsAdminAgent</MudSelectItem>
-            <MudSelectItem Value="@("LinuxAdminAgent")">LinuxAdminAgent</MudSelectItem>
+            <MudSelectItem Value="@("GeneralAgent")">General Agent</MudSelectItem>
+            <MudSelectItem Value="@("DbaAgent")">DBA Agent</MudSelectItem>
+            <MudSelectItem Value="@("WindowsAdminAgent")">Windows Admin</MudSelectItem>
         </MudSelect>
-    </MudPaper>
+    </div>
 
     <!-- Chat Messages Area -->
-    <MudPaper Class="glass-panel flex-grow-1 overflow-y-auto pa-4" Elevation="0">
-        <MudStack Spacing="3">
-            @foreach (var msg in _messages)
-            {
-                <MudPaper Class="@(msg.User == "You" ? "user-msg pa-3 align-self-end" : "agent-msg pa-3 align-self-start")" Elevation="0" Style="max-width: 75%; border-radius: 12px;">
-                    <MudText Typo="Typo.caption" Class="mb-1" Style="opacity: 0.8; font-weight: bold; color: var(--mud-palette-info);">@msg.User</MudText>
-                    <MudText Typo="Typo.body1">@msg.Text</MudText>
-                    @if (msg.User == "Manager" && msg.Text.Contains("approve", StringComparison.OrdinalIgnoreCase))
-                    {
-                        <div class="d-flex mt-2 gap-2">
-                            <MudButton Variant="Variant.Outlined" Color="Color.Success" OnClick="@(() => SendAction("Approve"))">Approve</MudButton>
-                            <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="@(() => SendAction("Reject"))">Reject</MudButton>
-                        </div>
-                    }
-                </MudPaper>
-            }
-        </MudStack>
+    <MudPaper Elevation="0" Class="flex-grow-1 overflow-y-auto pa-4 glass-panel d-flex flex-column gap-4" Style="margin-bottom: 16px;">
+        @foreach (var message in _messages)
+        {
+            var isUser = message.User == "You";
+            var isSystem = message.User == "System";
+            var isError = message.IsError;
+            
+            <div class="d-flex @(isUser ? "justify-end" : "justify-start")">
+                @if (isSystem)
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Surface" Class="align-self-center">@message.Text</MudText>
+                }
+                else
+                {
+                    <div class="pa-3 @(isUser ? "user-msg" : (isError ? "error-msg" : "agent-msg"))" style="border-radius: 12px; max-width: 80%;">
+                        <MudText Typo="Typo.subtitle2" Color="@(isUser ? Color.Primary : (isError ? Color.Error : Color.Info))" Class="mb-1">
+                            @message.User
+                        </MudText>
+                        <MudText Typo="Typo.body2">@message.Text</MudText>
+                        
+                        @if (isError && !string.IsNullOrEmpty(message.ErrorDetail))
+                        {
+                            <MudText Typo="Typo.caption" Class="mt-2" Style="display:block; opacity: 0.8;">
+                                @message.ErrorDetail
+                            </MudText>
+                        }
+                    </div>
+                }
+            </div>
+        }
+        
+        @if (_isWaiting && _currentStreamingMessage == null)
+        {
+            <div class="d-flex justify-start">
+                <div class="pa-3 agent-msg" style="border-radius: 12px; max-width: 80%;">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Info" Class="mb-1">
+                        @ChatState.SelectedAgent
+                    </MudText>
+                    <div class="dot-grid">
+                        <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                        <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                    </div>
+                </div>
+            </div>
+        }
     </MudPaper>
 
-    <!-- Input Box -->
-    <MudPaper Class="glass-input pa-2 mt-4" Elevation="0">
-        <div class="d-flex align-center">
-            <MudTextField @bind-Value="_userInput" Placeholder="Type message..." Variant="Variant.Text" DisableUnderLine="true" Margin="Margin.Dense" Class="flex-grow-1 mx-2" OnKeyDown="HandleKeyDown" />
-            <MudButton Variant="Variant.Text" Color="Color.Info" EndIcon="@Icons.Material.Filled.Send" OnClick="SendMessage" Disabled="@(!IsConnected || string.IsNullOrWhiteSpace(_userInput))">Send</MudButton>
-        </div>
-    </MudPaper>
-</MudContainer>
+    <!-- Input Area -->
+    <div class="d-flex gap-2">
+        <MudTextField @bind-Value="_userInput" Placeholder="Type a message..." Variant="Variant.Outlined" Class="glass-input" Immediate="true" OnKeyDown="HandleKeyDown" />
+        <MudIconButton Icon="@Icons.Material.Filled.Send" Color="Color.Primary" Variant="Variant.Filled" OnClick="SendMessage" Disabled="@(!IsConnected || _isWaiting)" />
+    </div>
+</div>
 
 @code {
     private HubConnection? _hubConnection;
     private List<ChatMessage> _messages = new();
     private string _userInput = "";
     private ChatMessage? _currentStreamingMessage;
+    private bool _isWaiting = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -99,6 +159,7 @@
         _hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
         {
             _messages.Add(new ChatMessage { User = user, Text = message });
+            _isWaiting = false;
             InvokeAsync(StateHasChanged);
         });
 
@@ -106,16 +167,33 @@
         {
             if (_currentStreamingMessage == null)
             {
-                _currentStreamingMessage = new ChatMessage { User = "Agent", Text = "" };
+                _currentStreamingMessage = new ChatMessage { User = ChatState.SelectedAgent, Text = "" };
                 _messages.Add(_currentStreamingMessage);
             }
             _currentStreamingMessage.Text += token;
+            _isWaiting = false;
+            InvokeAsync(StateHasChanged);
+        });
+
+        _hubConnection.On<ProblemDetailsDto>("ReceiveError", (problem) =>
+        {
+            _messages.Add(new ChatMessage 
+            { 
+                User = "System", 
+                Text = problem.Title ?? "An error occurred", 
+                IsError = true,
+                ErrorDetail = problem.Detail 
+            });
+            _isWaiting = false;
+            _currentStreamingMessage = null;
             InvokeAsync(StateHasChanged);
         });
 
         _hubConnection.On("StreamComplete", () => 
         {
             _currentStreamingMessage = null;
+            _isWaiting = false;
+            InvokeAsync(StateHasChanged);
         });
 
         await _hubConnection.StartAsync();
@@ -146,9 +224,19 @@
             _userInput = "";
             _messages.Add(new ChatMessage { User = "You", Text = msg });
             _currentStreamingMessage = null; // Reset before streaming new message
+            _isWaiting = true;
+            StateHasChanged(); // Force the UI to show the loading indicator immediately
             
-            // Use StreamMessage which streams tokens
-            await _hubConnection.SendAsync("StreamMessage", msg, ChatState.SelectedModel, ChatState.SelectedAgent);
+            try
+            {
+                // Use StreamMessage which streams tokens
+                await _hubConnection.SendAsync("StreamMessage", msg, ChatState.SelectedModel, ChatState.SelectedAgent);
+            }
+            catch (Exception)
+            {
+                _isWaiting = false;
+                _messages.Add(new ChatMessage { User = "System", Text = "Connection failed", IsError = true });
+            }
         }
     }
 
@@ -157,15 +245,6 @@
         if (e.Key == "Enter")
         {
             await SendMessage();
-        }
-    }
-
-    private async Task SendAction(string action)
-    {
-        if (_hubConnection is not null)
-        {
-            _messages.Add(new ChatMessage { User = "You", Text = $"Action: {action}" });
-            await _hubConnection.SendAsync("SendMessage", $"[ACTION:{action}]");
         }
     }
 
@@ -183,5 +262,14 @@
     {
         public string User { get; set; } = "";
         public string Text { get; set; } = "";
+        public bool IsError { get; set; } = false;
+        public string? ErrorDetail { get; set; }
+    }
+
+    private class ProblemDetailsDto
+    {
+        public string? Title { get; set; }
+        public string? Detail { get; set; }
+        public int Status { get; set; }
     }
 }

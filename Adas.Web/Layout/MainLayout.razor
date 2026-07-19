@@ -50,4 +50,21 @@
             // JS interop is unavailable during prerender; the cookie persists on the next interactive toggle.
         }
     }
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var cookieStr = await JsRuntime.InvokeAsync<string>("adasShell.getCookie", DarkModeCookie);
+            if (!string.IsNullOrEmpty(cookieStr) && bool.TryParse(cookieStr, out bool parsed))
+            {
+                _isDarkMode = parsed;
+                PersistedIsDarkMode = _isDarkMode;
+                ThemeState.SetIsDarkMode(_isDarkMode);
+            }
+        }
+        catch (InvalidOperationException)
+        {
+            // Prerendering
+        }
+    }
 }

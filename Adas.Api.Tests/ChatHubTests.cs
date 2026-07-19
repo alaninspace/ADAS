@@ -21,17 +21,17 @@ public class ChatHubTests : IClassFixture<WebApplicationFactory<Program>>
 
     private class MockOrchestrator : IOrchestrator
     {
-        public Task<string> RunWorkflowAsync(string inputPrompt)
+        public Task<string> RunWorkflowAsync(string inputPrompt, CancellationToken cancellationToken = default)
         {
             return Task.FromResult("Response");
         }
 
-        public async IAsyncEnumerable<string> StreamWorkflowAsync(string inputPrompt, string modelId, string agentId)
+        public async IAsyncEnumerable<string> StreamWorkflowAsync(string inputPrompt, string modelId, string agentId, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             yield return "Chunk 1";
-            await Task.Delay(10);
+            await Task.Delay(10, cancellationToken);
             yield return "Chunk 2";
-            await Task.Delay(10);
+            await Task.Delay(10, cancellationToken);
             yield return "Chunk 3";
         }
     }
@@ -88,6 +88,11 @@ public class ChatHubTests : IClassFixture<WebApplicationFactory<Program>>
         connection.On<string>("ReceiveToken", token =>
         {
             tokens.Add(token);
+        });
+
+        connection.On<Microsoft.AspNetCore.Mvc.ProblemDetails>("ReceiveError", problem =>
+        {
+            Assert.Fail($"Received error: {problem.Title} - {problem.Detail}");
         });
 
         await connection.SendAsync("StreamMessage", "Hello", "gpt-4", "GeneralAgent");

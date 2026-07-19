@@ -25,7 +25,7 @@ namespace Adas.Web.Tests.Components
             var cut = Render<Home>();
 
             // Assert
-            Assert.Contains("Model Picker", cut.Markup);
+            Assert.Contains("gpt-5.6-terra", cut.Markup);
         }
 
         [Fact]
@@ -35,7 +35,7 @@ namespace Adas.Web.Tests.Components
             var cut = Render<Home>();
 
             // Assert
-            Assert.Contains("Agent Selector", cut.Markup);
+            Assert.Contains("General Agent", cut.Markup);
         }
 
         [Fact]
@@ -45,11 +45,10 @@ namespace Adas.Web.Tests.Components
             var cut = Render<Home>();
 
             // Assert
-            Assert.Contains("Type message...", cut.Markup);
-            Assert.Contains("Send", cut.Markup);
+            Assert.Contains("Type a message...", cut.Markup);
         }
 
         public Task InitializeAsync() => Task.CompletedTask;
-        public async Task DisposeAsync() => await base.DisposeAsync();
+        public new async Task DisposeAsync() => await base.DisposeAsync();
     }
 }

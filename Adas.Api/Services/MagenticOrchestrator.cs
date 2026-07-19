@@ -19,7 +19,7 @@ public class MagenticOrchestrator : IOrchestrator
         _logger = logger;
     }
 
-    public async Task<string> RunWorkflowAsync(string inputPrompt)
+    public async Task<string> RunWorkflowAsync(string inputPrompt, CancellationToken cancellationToken = default)
     {
         var chatClient = _clientFactory.CreateClient("gpt-5.6-terra");
         
@@ -37,7 +37,7 @@ public class MagenticOrchestrator : IOrchestrator
             .Build();
             
         // Execute the workflow via MAF
-        Run run = await InProcessExecution.RunAsync(workflow, inputPrompt);
+        Run run = await InProcessExecution.RunAsync(workflow, inputPrompt, cancellationToken: cancellationToken);
         
         // Find the final output event
         var outputEvent = run.OutgoingEvents.OfType<WorkflowOutputEvent>().LastOrDefault();
@@ -45,7 +45,7 @@ public class MagenticOrchestrator : IOrchestrator
         return outputEvent?.Data?.ToString() ?? "";
     }
 
-    public async IAsyncEnumerable<string> StreamWorkflowAsync(string inputPrompt, string modelId, string agentId)
+    public async IAsyncEnumerable<string> StreamWorkflowAsync(string inputPrompt, string modelId, string agentId, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var chatClient = _clientFactory.CreateClient(modelId);
         
@@ -59,24 +59,37 @@ public class MagenticOrchestrator : IOrchestrator
 
         var agent = new ChatClientAgent(chatClient, systemPrompt);
         
+        var managerAgent = new ChatClientAgent(chatClient, "You are a manager.");
+        
         // Build the workflow. In a real system, we'd use the selected agent as a participant or manager.
-        Workflow workflow = new MagenticWorkflowBuilder(agent)
+        Workflow workflow = new MagenticWorkflowBuilder(managerAgent)
+            .AddParticipants(new[] { agent })
             .WithName($"Magentic Workflow - {agentId}")
             .RequirePlanSignoff(false)
             .WithMaxRounds(10)
             .Build();
             
-        // Execute streaming workflow
-        await using StreamingRun run = await InProcessExecution.Lockstep.RunStreamingAsync(workflow, inputPrompt);
+        var messages = new List<Microsoft.Extensions.AI.ChatMessage> 
+        { 
+            new(Microsoft.Extensions.AI.ChatRole.User, inputPrompt) 
+        };
 
-        await foreach (var evt in run.WatchStreamAsync())
+        // Execute streaming workflow
+        await using StreamingRun run = await InProcessExecution.Lockstep.RunStreamingAsync(workflow, messages, cancellationToken: cancellationToken);
+        await run.TrySendMessageAsync(new TurnToken(emitEvents: true));
+
+        await foreach (var evt in run.WatchStreamAsync(cancellationToken))
         {
-            if (evt is AgentResponseUpdateEvent updateEvent && updateEvent.Data is ChatResponseUpdate update)
+            if (evt is AgentResponseUpdateEvent updateEvent)
             {
-                if (update.Text != null)
+                if (updateEvent.Update?.Text != null)
                 {
-                    yield return update.Text;
+                    yield return updateEvent.Update.Text;
                 }
+            }
+            else if (evt is WorkflowErrorEvent errorEvent)
+            {
+                throw new Exception($"LLM Gateway Error: {errorEvent.Exception?.ToString()}");
             }
         }
     }

@@ -4,7 +4,7 @@ namespace Adas.Web.Services
 {
     public class ChatStateService
     {
-        public string SelectedModel { get; private set; } = "gpt-5.6-terra";
+        public string SelectedModel { get; private set; } = "openai/gpt-5.6-terra";
         public string SelectedAgent { get; private set; } = "GeneralAgent";
 
         public event Action? OnChange;

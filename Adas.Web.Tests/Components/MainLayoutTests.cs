@@ -30,6 +30,6 @@ namespace Adas.Web.Tests.Components
         }
 
         public Task InitializeAsync() => Task.CompletedTask;
-        public async Task DisposeAsync() => await base.DisposeAsync();
+        public new async Task DisposeAsync() => await base.DisposeAsync();
     }
 }
