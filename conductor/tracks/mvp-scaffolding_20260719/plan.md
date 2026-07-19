@@ -23,16 +23,16 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: Magentic Orchestrator Backend
-- [ ] Task: Implement LLM Gateway Client Factory
-  - [ ] Write Tests (Client factory returns `OpenAIChatCompletionClient` with correct headers)
-  - [ ] Implementation (Use Fortescue AI gateway config and wire the client secret from user secrets in Dev to hit real models)
-- [ ] Task: Scaffold Manager Agent & Generic Worker
-  - [ ] Write Tests (Agents can be instantiated and process a basic prompt using the real LLM endpoint)
-  - [ ] Implementation (Configure Microsoft Agent Framework Magentic Manager and generic worker)
-- [ ] Task: Implement SignalR Hub
-  - [ ] Write Tests (SignalR connection accepts messages and streams responses)
-  - [ ] Implementation (Create `ChatHub`, wire it to the Orchestrator, implement HITL mock message streaming)
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Implement LLM Gateway Client Factory
+  - [x] Write Tests (Client factory returns `OpenAIChatCompletionClient` with correct headers)
+  - [x] Implementation (Use Fortescue AI gateway config and wire the client secret from user secrets in Dev to hit real models)
+- [x] Task: Scaffold Manager Agent & Generic Worker
+  - [x] Write Tests (Agents can be instantiated and process a basic prompt using the real LLM endpoint)
+  - [x] Implementation (Configure Microsoft Agent Framework Magentic Manager and generic worker)
+- [x] Task: Implement SignalR Hub
+  - [x] Write Tests (SignalR connection accepts messages and streams responses)
+  - [x] Implementation (Create `ChatHub`, wire it to the Orchestrator, implement HITL mock message streaming)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: Chat UI (Blazor)
 - [ ] Task: Setup MudBlazor

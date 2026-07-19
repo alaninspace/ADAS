@@ -11,7 +11,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<Adas.Api.Services.IMemoryStore, Adas.Api.Services.MockMemoryStore>();
 builder.Services.AddSingleton<Adas.Api.Services.IOkfParser, Adas.Api.Services.OkfParser>();
+builder.Services.AddSingleton<Adas.Api.Services.ILLMClientFactory, Adas.Api.Services.GatewayLLMClientFactory>();
 
+builder.Services.AddControllers();
+builder.Services.AddSignalR();
 var otel = builder.Services.AddOpenTelemetry();
 otel.ConfigureResource(resource => resource.AddService("Adas.Api"));
 
@@ -104,10 +107,12 @@ app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapGet("/api/user/info", (ClaimsPrincipal user) => 
+app.MapGet("/api/user/info", (System.Security.Claims.ClaimsPrincipal user) => 
 {
     return new { user.Identity?.Name, IsAuthenticated = user.Identity?.IsAuthenticated ?? true };
-}).RequireAuthorization(AdasAuthorization.OperatorPolicy);
+}).RequireAuthorization(Adas.Api.Security.AdasAuthorization.OperatorPolicy);
+
+app.MapHub<Adas.Api.Hubs.ChatHub>("/chathub");
 
 app.MapGet("/login", (string? returnUrl, HttpContext context) =>
 {
