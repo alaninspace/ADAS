@@ -11,7 +11,7 @@
 - [x] Task: Setup Open Knowledge Format (OKF) & Mock Infrastructure
   - [x] Write Tests (OKF parser validation, mock database injection)
   - [x] Implementation (Create OKF models, parser service, Mock database context)
-- [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Authentication (BFF & Entra ID)
 - [ ] Task: Implement BFF OIDC Challenge
