@@ -8,10 +8,10 @@
 - [x] Task: Integrate OpenTelemetry 5b43565
   - [x] Write Tests (OTEL configuration validation)
   - [x] Implementation (Configure OTEL for logs and metrics pointing to `observe.fmg.local`)
-- [~] Task: Setup Open Knowledge Format (OKF) & Mock Infrastructure
-  - [ ] Write Tests (OKF parser validation, mock database injection)
-  - [ ] Implementation (Create OKF models, parser service, Mock database context)
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Setup Open Knowledge Format (OKF) & Mock Infrastructure
+  - [x] Write Tests (OKF parser validation, mock database injection)
+  - [x] Implementation (Create OKF models, parser service, Mock database context)
+- [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Authentication (BFF & Entra ID)
 - [ ] Task: Implement BFF OIDC Challenge
