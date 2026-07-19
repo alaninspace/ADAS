@@ -1,11 +1,11 @@
 # Implementation Plan
 
 ## Phase 1: Project Initialization & Configuration
-- [~] Task: Scaffold ASP.NET Core Web API project (Adas.Api) and Blazor WebAssembly project (Adas.Web)
-  - [ ] Initialize solution structure
-  - [ ] Setup `appsettings.json`, `appsettings.Development.json`, and `appsettings.Staging.json`
-  - [ ] Initialize `secrets.json` for development (specifically for LLM Gateway secrets)
-- [ ] Task: Integrate OpenTelemetry
+- [x] Task: Scaffold ASP.NET Core Web API project (Adas.Api) and Blazor WebAssembly project (Adas.Web) 6ed8f12
+  - [x] Initialize solution structure
+  - [x] Setup `appsettings.json`, `appsettings.Development.json`, and `appsettings.Staging.json`
+  - [x] Initialize `secrets.json` for development (specifically for LLM Gateway secrets)
+- [~] Task: Integrate OpenTelemetry
   - [ ] Write Tests (OTEL configuration validation)
   - [ ] Implementation (Configure OTEL for logs and metrics pointing to `observe.fmg.local`)
 - [ ] Task: Setup Open Knowledge Format (OKF) & Mock Infrastructure
