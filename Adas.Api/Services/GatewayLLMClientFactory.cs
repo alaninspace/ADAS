@@ -22,12 +22,21 @@ public class GatewayLLMClientFactory : ILLMClientFactory
         
         var options = new OpenAIClientOptions();
         
+        if (!string.IsNullOrEmpty(endpoint))
+        {
+            options.Endpoint = new Uri(endpoint);
+        }
+
         // Use standard OpenAI Client pointing to the Gateway
         var openAiClient = new OpenAIClient(new ApiKeyCredential(secret), options);
-        // Note: setting custom endpoint in the new OpenAI v2 SDK is usually done via a custom HttpClient in options, 
-        // or by using AzureOpenAIClient if the gateway mimics Azure OpenAI.
-        // For this mock, we will just instantiate the standard client.
         
         return openAiClient.GetChatClient(modelId).AsIChatClient();
+    }
+
+    // For testing purposes
+    public Uri GetConfiguredEndpoint()
+    {
+        var endpoint = _configuration["Gateway:Endpoint"];
+        return !string.IsNullOrEmpty(endpoint) ? new Uri(endpoint) : null;
     }
 }

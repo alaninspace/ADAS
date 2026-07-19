@@ -18,4 +18,12 @@ public class ChatHub : Hub
         var response = await _orchestrator.RunWorkflowAsync(message);
         await Clients.Caller.SendAsync("ReceiveMessage", "Manager", response);
     }
+
+    public async Task StreamMessage(string message, string modelId, string agentId)
+    {
+        await foreach (var token in _orchestrator.StreamWorkflowAsync(message, modelId, agentId))
+        {
+            await Clients.Caller.SendAsync("ReceiveToken", token);
+        }
+    }
 }

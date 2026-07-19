@@ -12,6 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<Adas.Api.Services.IMemoryStore, Adas.Api.Services.MockMemoryStore>();
 builder.Services.AddSingleton<Adas.Api.Services.IOkfParser, Adas.Api.Services.OkfParser>();
 builder.Services.AddSingleton<Adas.Api.Services.ILLMClientFactory, Adas.Api.Services.GatewayLLMClientFactory>();
+builder.Services.AddSingleton<Adas.Api.Services.IOrchestrator, Adas.Api.Services.MagenticOrchestrator>();
 
 builder.Services.AddControllers();
 builder.Services.AddSignalR();

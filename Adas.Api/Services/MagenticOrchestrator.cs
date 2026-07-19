@@ -37,4 +37,30 @@ public class MagenticOrchestrator : IOrchestrator
         var response = await chatClient.GetResponseAsync(inputPrompt); 
         return response?.ToString() ?? "";
     }
+
+    public async IAsyncEnumerable<string> StreamWorkflowAsync(string inputPrompt, string modelId, string agentId)
+    {
+        var chatClient = _clientFactory.CreateClient(modelId);
+        
+        // Setup agent system prompt based on agentId
+        var systemPrompt = agentId switch
+        {
+            "DbaAgent" => "You are a DBA expert.",
+            "WindowsAdminAgent" => "You are a Windows Admin expert.",
+            "LinuxAdminAgent" => "You are a Linux Admin expert.",
+            _ => "You are a generic worker agent capable of solving technical problems."
+        };
+
+        var agent = new ChatClientAgent(chatClient, systemPrompt);
+        
+        // For actual streaming, we stream directly from the chat client for now.
+        // Once MagenticWorkflow supports streaming its intermediate steps, we can hook it up.
+        await foreach (var chunk in chatClient.GetStreamingResponseAsync(inputPrompt))
+        {
+            if (chunk.Text != null)
+            {
+                yield return chunk.Text;
+            }
+        }
+    }
 }
