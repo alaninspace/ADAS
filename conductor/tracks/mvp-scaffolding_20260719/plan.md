@@ -20,7 +20,7 @@
 - [x] Task: Secure API Endpoints
   - [x] Write Tests (Ensure API rejects unauthenticated requests unless auth is bypassed in Dev)
   - [x] Implementation (Apply `OperatorPolicy` to all API endpoints, allowing mock identities/anonymous access in Dev mode if configured)
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: Magentic Orchestrator Backend
 - [ ] Task: Implement LLM Gateway Client Factory
