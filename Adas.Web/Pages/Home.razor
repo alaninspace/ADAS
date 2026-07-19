@@ -1,23 +1,70 @@
 @page "/"
 @using Microsoft.AspNetCore.SignalR.Client
+@using Adas.Web.Services
 @inject NavigationManager Navigation
+@inject ChatStateService ChatState
 @implements IAsyncDisposable
+@implements IDisposable
 
-<PageTitle>ADAS Operator Chat</PageTitle>
+<PageTitle>ADAS Premium Chat</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="d-flex flex-column" Style="height: 85vh;">
-    <MudPaper Class="flex-grow-1 overflow-y-auto pa-4" Elevation="3" Style="background-color: var(--mud-palette-background-grey);">
+<style>
+    .glass-panel {
+        background: rgba(18, 18, 18, 0.65);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(0, 205, 225, 0.3); /* Cyan accent border */
+        box-shadow: 0 4px 30px rgba(0, 205, 225, 0.1);
+        border-radius: 12px;
+    }
+    .glass-input {
+        background: rgba(18, 18, 18, 0.8);
+        border: 1px solid rgba(15, 90, 211, 0.5); /* MidBlue accent border */
+        border-radius: 8px;
+    }
+    .user-msg {
+        background: rgba(15, 90, 211, 0.2); /* MidBlue tint */
+        border: 1px solid rgba(15, 90, 211, 0.4);
+    }
+    .agent-msg {
+        background: rgba(0, 205, 225, 0.1); /* Cyan tint */
+        border: 1px solid rgba(0, 205, 225, 0.3);
+    }
+</style>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="d-flex flex-column pa-4" Style="height: 85vh; background-color: var(--mud-palette-background);">
+    
+    <!-- Header with Selectors -->
+    <MudPaper Class="glass-panel pa-3 mb-4 d-flex align-center" Elevation="0">
+        <MudText Typo="Typo.subtitle1" Class="mr-4">Model Picker</MudText>
+        <MudSelect T="string" Value="@ChatState.SelectedModel" ValueChanged="OnModelChanged" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mr-6" Style="max-width: 200px;">
+            <MudSelectItem Value="@("gpt-5.6-terra")">gpt-5.6-terra</MudSelectItem>
+            <MudSelectItem Value="@("gpt-4o")">gpt-4o</MudSelectItem>
+            <MudSelectItem Value="@("gpt-3.5")">gpt-3.5</MudSelectItem>
+        </MudSelect>
+
+        <MudText Typo="Typo.subtitle1" Class="mr-4">Agent Selector</MudText>
+        <MudSelect T="string" Value="@ChatState.SelectedAgent" ValueChanged="OnAgentChanged" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 200px;">
+            <MudSelectItem Value="@("GeneralAgent")">GeneralAgent</MudSelectItem>
+            <MudSelectItem Value="@("DbaAgent")">DbaAgent</MudSelectItem>
+            <MudSelectItem Value="@("WindowsAdminAgent")">WindowsAdminAgent</MudSelectItem>
+            <MudSelectItem Value="@("LinuxAdminAgent")">LinuxAdminAgent</MudSelectItem>
+        </MudSelect>
+    </MudPaper>
+
+    <!-- Chat Messages Area -->
+    <MudPaper Class="glass-panel flex-grow-1 overflow-y-auto pa-4" Elevation="0">
         <MudStack Spacing="3">
             @foreach (var msg in _messages)
             {
-                <MudPaper Class="@(msg.User == "You" ? "pa-3 align-self-end mud-theme-primary" : "pa-3 align-self-start mud-theme-dark")" Elevation="2" Style="max-width: 75%; border-radius: 12px;">
-                    <MudText Typo="Typo.caption" Class="mb-1" Style="opacity: 0.8;">@msg.User</MudText>
+                <MudPaper Class="@(msg.User == "You" ? "user-msg pa-3 align-self-end" : "agent-msg pa-3 align-self-start")" Elevation="0" Style="max-width: 75%; border-radius: 12px;">
+                    <MudText Typo="Typo.caption" Class="mb-1" Style="opacity: 0.8; font-weight: bold; color: var(--mud-palette-info);">@msg.User</MudText>
                     <MudText Typo="Typo.body1">@msg.Text</MudText>
                     @if (msg.User == "Manager" && msg.Text.Contains("approve", StringComparison.OrdinalIgnoreCase))
                     {
                         <div class="d-flex mt-2 gap-2">
-                            <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="@(() => SendAction("Approve"))">Approve</MudButton>
-                            <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="@(() => SendAction("Reject"))">Reject</MudButton>
+                            <MudButton Variant="Variant.Outlined" Color="Color.Success" OnClick="@(() => SendAction("Approve"))">Approve</MudButton>
+                            <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="@(() => SendAction("Reject"))">Reject</MudButton>
                         </div>
                     }
                 </MudPaper>
@@ -25,10 +72,11 @@
         </MudStack>
     </MudPaper>
 
-    <MudPaper Class="pa-2 mt-4" Elevation="3">
+    <!-- Input Box -->
+    <MudPaper Class="glass-input pa-2 mt-4" Elevation="0">
         <div class="d-flex align-center">
-            <MudTextField @bind-Value="_userInput" Placeholder="Type your message..." Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1 mr-2" OnKeyDown="HandleKeyDown" />
-            <MudIconButton Icon="@Icons.Material.Filled.Send" Color="Color.Primary" OnClick="SendMessage" Disabled="@(!IsConnected || string.IsNullOrWhiteSpace(_userInput))" />
+            <MudTextField @bind-Value="_userInput" Placeholder="Type message..." Variant="Variant.Text" DisableUnderLine="true" Margin="Margin.Dense" Class="flex-grow-1 mx-2" OnKeyDown="HandleKeyDown" />
+            <MudButton Variant="Variant.Text" Color="Color.Info" EndIcon="@Icons.Material.Filled.Send" OnClick="SendMessage" Disabled="@(!IsConnected || string.IsNullOrWhiteSpace(_userInput))">Send</MudButton>
         </div>
     </MudPaper>
 </MudContainer>
@@ -40,6 +88,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        ChatState.OnChange += StateHasChanged;
+
         _hubConnection = new HubConnectionBuilder()
             .WithUrl(Navigation.ToAbsoluteUri("/chathub"))
             .Build();
@@ -53,6 +103,21 @@
         await _hubConnection.StartAsync();
         
         _messages.Add(new ChatMessage { User = "System", Text = "Connected to ADAS Orchestrator." });
+    }
+
+    public void Dispose()
+    {
+        ChatState.OnChange -= StateHasChanged;
+    }
+
+    private void OnModelChanged(string model)
+    {
+        ChatState.SetModel(model);
+    }
+
+    private void OnAgentChanged(string agent)
+    {
+        ChatState.SetAgent(agent);
     }
 
     private async Task SendMessage()

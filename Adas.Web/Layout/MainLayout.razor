@@ -1,11 +1,20 @@
 @inherits LayoutComponentBase
-<MudThemeProvider IsDarkMode="true" />
+@using Adas.Web.Theme
+@using Adas.Web.Services
+@inject IJSRuntime JsRuntime
+@inject ThemeStateService ThemeState
+
+<MudThemeProvider Theme="FortescueTheme.Theme" @bind-IsDarkMode="_isDarkMode" />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
 <MudLayout>
     <MudAppBar Elevation="1">
         <MudText Typo="Typo.h5" Class="ml-3">Adas Platform</MudText>
+        <MudSpacer />
+        <MudTooltip Text="@DarkLightModeButtonText">
+            <MudIconButton Icon="@(_isDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)" Color="Color.Inherit" OnClick="@DarkModeToggle" />
+        </MudTooltip>
     </MudAppBar>
     <MudMainContent>
         <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6 mb-6">
@@ -13,3 +22,31 @@
         </MudContainer>
     </MudMainContent>
 </MudLayout>
+
+@code {
+    private bool _isDarkMode = true;
+    private bool PersistedIsDarkMode { get; set; } = true;
+    private const string DarkModeCookie = "theme_dark_mode";
+
+    private string DarkLightModeButtonText => _isDarkMode ? "Light mode" : "Dark mode";
+
+    private async Task DarkModeToggle()
+    {
+        _isDarkMode = !_isDarkMode;
+        PersistedIsDarkMode = _isDarkMode;
+        ThemeState.SetIsDarkMode(_isDarkMode);
+        await SetCookieAsync(DarkModeCookie, _isDarkMode);
+    }
+
+    private async Task SetCookieAsync(string name, bool value)
+    {
+        try
+        {
+            await JsRuntime.InvokeVoidAsync("adasShell.setCookie", name, value.ToString(), 365);
+        }
+        catch (InvalidOperationException)
+        {
+            // JS interop is unavailable during prerender; the cookie persists on the next interactive toggle.
+        }
+    }
+}
