@@ -1,5 +1,2 @@
 <Solution>
-  <Project Path="Adas.Api.Tests/Adas.Api.Tests.csproj" />
-  <Project Path="Adas.Api/Adas.Api.csproj" />
-  <Project Path="Adas.Web/Adas.Web.csproj" />
 </Solution>

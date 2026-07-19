@@ -1,0 +1,31 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch API Server",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/Adas.Api/bin/Debug/net10.0/Adas.Api.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/Adas.Api",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    {
+      "name": "Attach to Blazor WASM",
+      "type": "blazorwasm",
+      "request": "attach",
+      "url": "http://localhost:5035",
+      "timeout": 30000
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug Full-Stack (API + Web)",
+      "configurations": ["Launch API Server", "Attach to Blazor WASM"],
+      "stopAll": true
+    }
+  ]
+}

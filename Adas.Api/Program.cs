@@ -97,12 +97,12 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseWebAssemblyDebugging();
 }
 
 app.UseHttpsRedirection();
 
-app.UseBlazorFrameworkFiles();
-app.UseStaticFiles();
+app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -126,6 +126,7 @@ app.MapGet("/logout", (HttpContext context) =>
         new[] { CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme });
 });
 
+app.MapStaticAssets();
 app.MapFallbackToFile("index.html");
 
 app.Run();
